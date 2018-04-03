@@ -7,10 +7,7 @@ function Node() {
 }
 
 Node.prototype.run() {
-    if(!this.stale) {
-        return this.out;
-    }
-    else { // this node is "stale", so we have to evalute its antecedents
+    if(this.stale){ // this node is "stale", so we have to evalute its antecedents
         this.stale = false;
         for(key in this.in) {
             var parent = this.in[key];
@@ -18,11 +15,18 @@ Node.prototype.run() {
             this.stale = false;
         }
 
-        // todo: handle recursive nodes
-        this.action(this.in);
+        if(typeof(this.action) === "function") { // this is just a simple node with a direct action
+            this.out = this.action(this.in);
+        }
+        else if(typeof(this.node) === "Object") { // I'm connected to a node that I contain, and somewhere in this mess is the node that actually has the action!
+            this.node.markChildrenStale(true); // todo: the nested node may not depend on all inputs of its parent, so it may not actually be stale
+            this.out = this.node.run();
+        }
 
         this.markChildrenStale(false); // mark all children (not including self) as stale
     }
+
+    return this.out;
 }
 
 Node.prototype.markChildrenStale(includeSelf) {
@@ -32,13 +36,6 @@ Node.prototype.markChildrenStale(includeSelf) {
         child.markChildrenStale(true);
     }
 }
-
-// function Connection(fromNode, fromKey, toNode, toKey) {
-//     this.fromNode = fromNode;
-//     this.fromKey = fromKey;
-//     this.toNode = toNode;
-//     this.toKey = toKey;
-// }
 
 Node.prototype.render(stage, pos) {
 
