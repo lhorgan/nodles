@@ -1,6 +1,7 @@
 function Node() {
     this.in = {};
     this.out = {};
+    this.cachedOutput = {};
     this.node;
     this.action;
     this.stale = false;
@@ -15,18 +16,18 @@ Node.prototype.run() {
             this.stale = false;
         }
 
-        if(typeof(this.action) === "function") { // this is just a simple node with a direct action
-            this.out = this.action(this.in);
+        if(typeof(this.action) === function) {
+            this.cachedOutput = this.action(this.in);
         }
-        else if(typeof(this.node) === "Object") { // I'm connected to a node that I contain, and somewhere in this mess is the node that actually has the action!
-            this.node.markChildrenStale(true); // todo: the nested node may not depend on all inputs of its parent, so it may not actually be stale
-            this.out = this.node.run();
+        else { // it's not a function, it's a module
+            // the action is a module
+            this.cachedOutput = this.module.run();
         }
 
         this.markChildrenStale(false); // mark all children (not including self) as stale
     }
 
-    return this.out;
+    return this.cachedOutput;
 }
 
 Node.prototype.markChildrenStale(includeSelf) {
@@ -35,6 +36,10 @@ Node.prototype.markChildrenStale(includeSelf) {
         var child = this.out[key];
         child.markChildrenStale(true);
     }
+}
+
+function Module() {
+    this.nodes = [];
 }
 
 Node.prototype.render(stage, pos) {
