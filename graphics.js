@@ -15,5 +15,5 @@ function Thing(data, pos) {
 }
 
 Thing.prototype.render(stage) {
-    this.data.render(stage); // delegate rendering to the thing (probably a node)
+    this.data.render(stage, pos); // delegate rendering to the thing (probably a node)
 }
