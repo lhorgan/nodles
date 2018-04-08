@@ -48,7 +48,7 @@ function Module() {
 Module.prototype.run(input) {
     for(key in this.in) {
         var node = this.in[key];
-        node.
+
     }
 }
 
