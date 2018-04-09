@@ -1,50 +1,58 @@
 function Port() {
-    this.node;
+    this.Nodle;
     this.value;
     this.many = {};
     this.one;
+    this.id = randomString(10);
 }
 
-Port.prototype.addOutConnection(other) {
+Port.prototype.addOutConnection = function(other) {
     this.many[other] = other;
     other.one = this;
 }
 
-Port.prototype.addInConnection(other) {
+Port.prototype.addInConnection = function(other) {
     this.one = other;
     other.many[this] = this;
 }
 
-Port.prototype.update(value) {
+Port.prototype.update = function(value) {
     if(value !== this.value) {
         this.value = value;
         for(var key in this.many) {
             var inPort = this.many[key];
-            inPort.node.schedule();
+            inPort.Nodle.schedule();
         }
     }
 }
 
-Port.prototype.render() {
-    var circle = new fabric.Cirlce({
-        radius: 6,
-        fill: "red"
+Port.prototype.render = function() {    
+    var _this = this;
+    
+    var rect = new fabric.Rect({
+        width: 10,
+        height: 10
     });
     
-    return circle;
+    rect.on("mousedblclick", function() {
+        alert(_this);
+    });
+    
+    return rect;
 }
 
-Port.prototype.toString() {
-    return randomString(10);
+Port.prototype.toString = function() {
+    return this.id;
 }
 
-function Node() {
+function Nodle() {
     this.in = {};
     this.out = {};
     this.action;
+    this.id = randomString(10);
 }
 
-Node.prototype.ready() {
+Nodle.prototype.ready = function() {
     var allGood = true;
     for(var key in this.in) {
         var port = this.in[key];
@@ -57,11 +65,7 @@ Node.prototype.ready() {
     return allGood;
 }
 
-Node.prototype.markStale() {
-    SCHED.add(this);
-}
-
-Node.prototype.run() {
+Nodle.prototype.run = function() {
     var _this = this;
     this.action.run(this.in, function(outVals) {
         for(var key in outVals) {
@@ -73,12 +77,14 @@ Node.prototype.run() {
     });
 }
 
-Node.prototype.render() {
-    var textSize = 12;
+Nodle.prototype.render = function() {
+    var portHeight = 10;
+    var portSpacing = 5;
     
     var groupArr = [];
         
-    var height = max(Object.keys(this.in).length, Object.keys(this.out).length) * (textSize + 1);
+    var height = Math.max(Object.keys(this.in).length, Object.keys(this.out).length) * (portHeight + portSpacing) - portSpacing;
+    console.log("my height is " + height);
     
     var offX = 50;
     var offY = 50;
@@ -86,39 +92,51 @@ Node.prototype.render() {
         left: offX,
         top: offY,
         height: height,
-        width: 20;
-        fill: "red",
+        width: 50,
+        fill: "white",
         stroke: "black",
-        strokeWidth: 1
+        strokeWidth: 1,
+        hasControls: false
     });
     
-    var group = new fabric.group([box]);
+    /*var box2 = new fabric.Rect({
+        width: 10,
+        height: 10,
+        top: 50,
+        left: 50
+    });*/
     
-    var portX = 0;
-    var portY = 0;
+    var group = new fabric.Group([box], {
+        subTargetCheck: true
+    });
+    group.hasControls = false;
+    
+    var portX = offX;
+    var portY = offY;
     for(var key in this.in) {
-        var port = this.in[key].render;
+        var port = this.in[key].render();
         port.left = portX;
         port.top = portY;
         
-        portX += textSize + 1;
+        portY += portHeight + portSpacing;
         
-        group.add(port);
+        group.addWithUpdate(port);
     }
     
     return group;
 }
 
-Node.prototype.toString() {
-    return randomString(10);
+Nodle.prototype.toString = function() {
+    return this.id;
 }
 
 function Flow() {
     this.in = {};
     this.out = {};
+    this.id = randomString(10);
 }
 
-Flow.prototype.ready() {
+Flow.prototype.ready = function() {
     var allGood = true;
     
     for(var key in this.in) {
@@ -131,7 +149,7 @@ Flow.prototype.ready() {
     return allGood;
 }
 
-Flow.prototype.run() {
+Flow.prototype.run = function() {
     for(var key in this.in) {
         var inPort = this.in[key];
         for(var con in inPort.many) {
@@ -140,8 +158,8 @@ Flow.prototype.run() {
     }
 }
 
-Flow.prototype.toString() {
-    return randomString(10);
+Flow.prototype.toString = function() {
+    return this.id;
 }
 
 function Action(fun, cb) {
@@ -149,7 +167,7 @@ function Action(fun, cb) {
     this.cb = cb;
 }
 
-Action.prototype.run(inPorts) {
+Action.prototype.run = function(inPorts) {
     var args = {};
     for(port in inPorts) {
         args[port] = inPorts[port].value;
@@ -161,7 +179,7 @@ function Scheduler() {
     programs = [];
 }
 
-Scheduler.prototype.add(program) {
+Scheduler.prototype.add = function(program) {
     if(program.ready()) {
         program.run();
     }

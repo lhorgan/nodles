@@ -20,17 +20,19 @@
 
 function init() {
     var canvas = new fabric.Canvas("nodleCanvas");
-
-    // create a rectangle object
-    var rect = new fabric.Rect({
-        left: 100,
-        top: 100,
-        fill: 'red',
-        width: 20,
-        height: 20,
-        hasControls: false
-    });
+    
+    var node1 = new Nodle();
+    var x = new Port();
+    x.port = node1;
+    var y = new Port();
+    y.port = node1;
+    var z = new Port();
+    z.port = node1;
+    node1.in = {"x": x, "y": y};
+    node1.out = {"z": z};
+    
+    var renderedNode = node1.render();
 
     // "add" rectangle onto canvas
-    canvas.add(rect);
+    canvas.add(renderedNode);
 }
