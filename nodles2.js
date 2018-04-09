@@ -26,21 +26,6 @@ Port.prototype.update = function(value) {
     }
 }
 
-Port.prototype.render = function() {    
-    var _this = this;
-    
-    var rect = new fabric.Rect({
-        width: 10,
-        height: 10
-    });
-    
-    rect.on("mousedblclick", function() {
-        alert(_this);
-    });
-    
-    return rect;
-}
-
 Port.prototype.toString = function() {
     return this.id;
 }
@@ -61,7 +46,7 @@ Nodle.prototype.ready = function() {
             break;
         }
     }
-    
+
     return allGood;
 }
 
@@ -77,55 +62,6 @@ Nodle.prototype.run = function() {
     });
 }
 
-Nodle.prototype.render = function() {
-    var portHeight = 10;
-    var portSpacing = 5;
-    
-    var groupArr = [];
-        
-    var height = Math.max(Object.keys(this.in).length, Object.keys(this.out).length) * (portHeight + portSpacing) - portSpacing;
-    console.log("my height is " + height);
-    
-    var offX = 50;
-    var offY = 50;
-    var box = new fabric.Rect({
-        left: offX,
-        top: offY,
-        height: height,
-        width: 50,
-        fill: "white",
-        stroke: "black",
-        strokeWidth: 1,
-        hasControls: false
-    });
-    
-    /*var box2 = new fabric.Rect({
-        width: 10,
-        height: 10,
-        top: 50,
-        left: 50
-    });*/
-    
-    var group = new fabric.Group([box], {
-        subTargetCheck: true
-    });
-    group.hasControls = false;
-    
-    var portX = offX;
-    var portY = offY;
-    for(var key in this.in) {
-        var port = this.in[key].render();
-        port.left = portX;
-        port.top = portY;
-        
-        portY += portHeight + portSpacing;
-        
-        group.addWithUpdate(port);
-    }
-    
-    return group;
-}
-
 Nodle.prototype.toString = function() {
     return this.id;
 }
@@ -138,14 +74,14 @@ function Flow() {
 
 Flow.prototype.ready = function() {
     var allGood = true;
-    
+
     for(var key in this.in) {
         if(this.in[key] === null) {
             allGood = false;
             break;
         }
     }
-    
+
     return allGood;
 }
 
