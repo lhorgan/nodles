@@ -15,6 +15,16 @@ Port.prototype.addInConnection(other) {
     other.many[this] = this;
 }
 
+Port.prototype.update(value) {
+    if(value !== this.value) {
+        this.value = value;
+        for(var key in this.many) {
+            var inPort = this.many[key];
+            inPort.node.schedule();
+        }
+    }
+}
+
 Port.prototype.toString() {
     return randomString(10);
 }
@@ -25,23 +35,33 @@ function Node() {
     this.action;
 }
 
-Node.prototype.run() {
-    var nodesToRun = [this];
-    var nodesToRunSet = Set();
-    
-    
-    
-    var outVals = this.action.run(this.in);
-    for(key in outVals) {
-        this.out[key].value = outVals[key];
+Node.prototype.ready() {
+    var allGood = true;
+    for(var key in this.in) {
+        var port = this.in[key];
+        if(port.value === null) {
+            allGood = false;
+            break;
+        }
     }
+    
+    return allGood;
 }
 
-/*
-topologically sort the node graph to resolve dependencies
-*/
-Node.prototype.topologicalSort() {
-    
+Node.prototype.markStale() {
+    SCHED.add(this);
+}
+
+Node.prototype.run() {
+    var _this = this;
+    this.action.run(this.in, function(outVals) {
+        for(var key in outVals) {
+            var outPort = this.out[key];
+            //outPort.value = outVals[key];
+            //outPort.updateConnections();
+            outPort.update(value);
+        }
+    });
 }
 
 Node.prototype.toString() {
@@ -49,9 +69,17 @@ Node.prototype.toString() {
 }
 
 function Flow() {
-    this.nodes = [];
     this.in = {};
     this.out = {};
+}
+
+Flow.prototype.run() {
+    for(var key in this.in) {
+        var inPort = this.in[key];
+        for(var con in inPort.many) {
+            inPort.many[con].update(inPort.value);
+        }
+    }
 }
 
 Flow.prototype.toString() {
@@ -59,11 +87,12 @@ Flow.prototype.toString() {
 }
 
 Flow.prototype.run() {
-
+    
 }
 
-function Action(fun) {
+function Action(fun, cb) {
     this.fun = fun;
+    this.cb = cb;
 }
 
 Action.prototype.run(inPorts) {
@@ -71,7 +100,17 @@ Action.prototype.run(inPorts) {
     for(port in inPorts) {
         args[port] = inPorts[port].value;
     }
-    return this.fun(args);
+    cb(this.fun(args));
+}
+
+function Scheduler() {
+    programs = [];
+}
+
+Scheduler.prototype.add(program) {
+    if(program.ready()) {
+        program.run();
+    }
 }
 
 /* Generate a random string of LENGTH characters */
