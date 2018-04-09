@@ -25,6 +25,15 @@ Port.prototype.update(value) {
     }
 }
 
+Port.prototype.render() {
+    var circle = new fabric.Cirlce({
+        radius: 6,
+        fill: "red"
+    });
+    
+    return circle;
+}
+
 Port.prototype.toString() {
     return randomString(10);
 }
@@ -64,6 +73,42 @@ Node.prototype.run() {
     });
 }
 
+Node.prototype.render() {
+    var textSize = 12;
+    
+    var groupArr = [];
+        
+    var height = max(Object.keys(this.in).length, Object.keys(this.out).length) * (textSize + 1);
+    
+    var offX = 50;
+    var offY = 50;
+    var box = new fabric.Rect({
+        left: offX,
+        top: offY,
+        height: height,
+        width: 20;
+        fill: "red",
+        stroke: "black",
+        strokeWidth: 1
+    });
+    
+    var group = new fabric.group([box]);
+    
+    var portX = 0;
+    var portY = 0;
+    for(var key in this.in) {
+        var port = this.in[key].render;
+        port.left = portX;
+        port.top = portY;
+        
+        portX += textSize + 1;
+        
+        group.add(port);
+    }
+    
+    return group;
+}
+
 Node.prototype.toString() {
     return randomString(10);
 }
@@ -71,6 +116,19 @@ Node.prototype.toString() {
 function Flow() {
     this.in = {};
     this.out = {};
+}
+
+Flow.prototype.ready() {
+    var allGood = true;
+    
+    for(var key in this.in) {
+        if(this.in[key] === null) {
+            allGood = false;
+            break;
+        }
+    }
+    
+    return allGood;
 }
 
 Flow.prototype.run() {
@@ -84,10 +142,6 @@ Flow.prototype.run() {
 
 Flow.prototype.toString() {
     return randomString(10);
-}
-
-Flow.prototype.run() {
-    
 }
 
 function Action(fun, cb) {
