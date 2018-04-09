@@ -1,18 +1,18 @@
 function Port() {
     this.node;
     this.value;
-    this.in = {};
-    this.out = {};
+    this.many = {};
+    this.one;
 }
 
 Port.prototype.addOutConnection(other) {
-    this.out[other] = other;
-    other.in[this] = this;
+    this.many[other] = other;
+    other.one = this;
 }
 
 Port.prototype.addInConnection(other) {
-    this.in[other] = other;
-    other.out[this] = this;
+    this.one = other;
+    other.many[this] = this;
 }
 
 Port.prototype.toString() {
@@ -26,10 +26,22 @@ function Node() {
 }
 
 Node.prototype.run() {
+    var nodesToRun = [this];
+    var nodesToRunSet = Set();
+    
+    
+    
     var outVals = this.action.run(this.in);
     for(key in outVals) {
         this.out[key].value = outVals[key];
     }
+}
+
+/*
+topologically sort the node graph to resolve dependencies
+*/
+Node.prototype.topologicalSort() {
+    
 }
 
 Node.prototype.toString() {
