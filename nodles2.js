@@ -1,19 +1,34 @@
 function Port() {
-    this.Nodle;
+    this.nodle;
     this.value;
     this.many = {};
     this.one;
     this.id = randomString(10);
+
+    this.x = Math.random() * 800;
+    this.y = Math.random() * 800;
 }
 
 Port.prototype.addOutConnection = function(other) {
     this.many[other] = other;
     other.one = this;
+    this.nodle.renderer.updateNodle(this.nodle);
 }
 
 Port.prototype.addInConnection = function(other) {
     this.one = other;
     other.many[this] = this;
+    this.nodle.renderer.updateNodle(this.nodle);
+}
+
+Port.prototype.getType = function() {
+    console.log(this.nodle.out);
+    if(this in this.nodle.in) {
+        return "in";
+    }
+    else if(this in this.nodle.out) {
+        return "out";
+    }
 }
 
 Port.prototype.update = function(value) {
@@ -21,7 +36,7 @@ Port.prototype.update = function(value) {
         this.value = value;
         for(var key in this.many) {
             var inPort = this.many[key];
-            inPort.Nodle.schedule();
+            inPort.nodle.schedule();
         }
     }
 }
@@ -42,12 +57,16 @@ function Nodle(renderer) {
     this.renderer = renderer;
 }
 
-Nodle.prototype.addInPort = function(port) {
+Nodle.prototype.addInPort = function(port, name) {
+    port.nodle = this;
     this.in[port] = port;
+    this.renderer.updateNodle(this);
 }
 
-Nodle.prototype.addOutPort = function(port) {
-    this.out[port] = port;
+Nodle.prototype.addOutPort = function(port, name) {
+    port.nodle = this;
+    this.out[name] = port;
+    this.renderer.updateNodle(this);
 }
 
 Nodle.prototype.ready = function() {

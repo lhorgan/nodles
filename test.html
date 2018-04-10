@@ -3,12 +3,18 @@
         <title>Nodle</title>
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/2.2.3/fabric.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
         <script src="nodles2.js"></script>
         <script src="graphics.js"></script>
     </head>
 
     <body>
-        <canvas id="nodleCanvas" width=1000 height=1000 style="outline: solid black;"></canvas>
+        <div style="float: left;">
+            <canvas id="nodleCanvas" width=1000 height=1000 style="outline: solid black;"></canvas>
+        </div>
+        <div id="panel" style="float: left;">
+            Info panel
+        </div>
 
         <script>
             var g = new Graph();
