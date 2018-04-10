@@ -30,11 +30,24 @@ Port.prototype.toString = function() {
     return this.id;
 }
 
-function Nodle() {
+function Nodle(renderer) {
     this.in = {};
     this.out = {};
     this.action;
     this.id = randomString(10);
+
+    this.x = 50;
+    this.y = 50;
+
+    this.renderer = renderer;
+}
+
+Nodle.prototype.addInPort = function(port) {
+    this.in[port] = port;
+}
+
+Nodle.prototype.addOutPort = function(port) {
+    this.out[port] = port;
 }
 
 Nodle.prototype.ready = function() {
