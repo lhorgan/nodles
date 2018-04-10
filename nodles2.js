@@ -12,7 +12,7 @@ function Port() {
 Port.prototype.addOutConnection = function(other) {
     this.many[other] = other;
     other.one = this;
-    this.nodle.renderer.updateNodle(this.nodle);
+    this.nodle.renderer.addEdge(this, other);
 }
 
 Port.prototype.addInConnection = function(other) {

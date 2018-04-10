@@ -59,6 +59,9 @@ Graph.prototype.renderNodle = function(nodle) {
         portGraphic.port = nodle.in[key];
         portGraphic.left = portX;
         portGraphic.top = portY;
+        nodle.in[key].x = portX;
+        nodle.in[key].y = portY;
+
         group.inPorts.push(portGraphic);
 
         portY += portHeight + portSpacing;
@@ -86,18 +89,38 @@ Graph.prototype.renderNodle = function(nodle) {
         nodle.y = this.top;
 
         for(var i = 0; i < this.inPorts.length; i++) {
-            console.log(this.inPorts[i]);
+            //console.log(this.inPorts[i]);
             var port = this.inPorts[i].port;
             if(_this.edges[port]) {
-                var lineGraphic = this.edges[port]["in"];
+                var lineGraphic = _this.edges[port]["in"];
                 console.log("I need to update the position of ");
+                //console.log(this.top + this.inPorts[i].top);
+                lineGraphic.set("y2", this.top - this.inPorts[i].top);
+                lineGraphic.set("x2", this.left);
                 console.log(lineGraphic);
+                lineGraphic.set("dirty", true);
             }
         }
 
         for(var i = 0; i < this.outPorts.length; i++) {
+            //console.log(this.outPorts);
             //console.log(this.outPorts[i]);
+            var port = this.outPorts[i].port;
+            console.log(_this.edges[port]);
+            if(_this.edges[port]) {
+                for(var z = 0; z < _this.edges[port]["out"].length; z++) {
+                    var lineGraphic = _this.edges[port]["out"][z];
+                    console.log("I need to update the position of ");
+                    //console.log(this.top + this.inPorts[i].top);
+                    lineGraphic.set("y1", this.top - this.inPorts[i].top);
+                    lineGraphic.set("x1", this.left + this.width);
+                    console.log(lineGraphic);
+                    lineGraphic.set("dirty", true);
+                }
+            }
         }
+
+        _this.canvas.renderAll();
     });
 
     return group;
@@ -188,7 +211,7 @@ Graph.prototype.updateNodle = function(nodle, remove) {
         this.nodles[nodle]["graphic"] = nodleGraphic;
         this.canvas.add(nodleGraphic);
 
-        this.renderEdges(nodle)
+        //this.renderEdges(nodle);
     }
     else { // new nodle
         this.nodles[nodle] = {"nodle": nodle, "graphic": null, "edges": null};
@@ -196,49 +219,37 @@ Graph.prototype.updateNodle = function(nodle, remove) {
         this.nodles[nodle]["graphic"] = nodleGraphic;
         this.canvas.add(nodleGraphic);
 
-        this.renderEdges(nodle)
+        //this.renderEdges(nodle);
     }
 }
 
-// Graph.prototype.renderEdges = function(nodle) {
-//     console.log("rendering");
-//     if(this.nodles[nodle]["edges"]) {
-//         this.canvas.remove(this.nodles[nodle]["edges"])
-//     }
-//
-//     var group = new fabric.Group([], {});
-//
-//     for(var fromKey in nodle.out) {
-//         var outPort = nodle.out[fromKey];
-//         for(var toKey in outPort.many) {
-//             var inPort = outPort.many[toKey];
-//             console.log([outPort.x, outPort.y, inPort.x, inPort.y]);
-//             var edge = new fabric.Line([outPort.x, outPort.y, inPort.x, inPort.y], {
-//                 fill: 'red',
-//                 stroke: 'red',
-//                 strokeWidth: 1
-//             });
-//             group.addWithUpdate(edge);
-//         }
-//     }
-//
-//     return group;
-// }
-
 Graph.prototype.renderEdges = function(nodle) {
+    console.log("RENDERING EDGES");
+    //var group = new fabric.Group([], {});
+
     for(var fromKey in nodle.out) {
        var outPort = nodle.out[fromKey];
        for(var toKey in outPort.many) {
            var inPort = outPort.many[toKey];
            console.log([outPort.x, outPort.y, inPort.x, inPort.y]);
-           var edge = new fabric.Line([outPort.x, outPort.y, inPort.x, inPort.y], {
-               fill: 'red',
-               stroke: 'red',
-               strokeWidth: 1
-           });
-           this.addOutEdge(outPort, edge);
+           this.addEdge(outPort, inPort);
+           //this.canvas.add(edge);
+           //group.addWithUpdate(edge);
        }
    }
+   //return group;
+}
+
+Graph.prototype.addEdge = function(outPort, inPort) {
+    var edge = new fabric.Line([outPort.x, outPort.y, inPort.x, inPort.y], {
+        fill: 'red',
+        stroke: 'red',
+        strokeWidth: 1,
+        selectable: false
+    });
+    this.addOutEdge(outPort, edge);
+    this.addInEdge(inPort, edge);
+    this.canvas.add(edge);
 }
 
 Graph.prototype.addOutEdge = function(port, edge) {
@@ -262,5 +273,9 @@ Graph.prototype.render = function() {
         var nodleGraphic = this.renderNodle(nodle);
         this.nodles[nodle]["graphic"] = nodleGraphic;
         this.canvas.add(nodleGraphic);
+    }
+
+    for(var id in this.nodles) {
+        this.renderEdges(this.nodles[id]["nodle"]);
     }
 }
